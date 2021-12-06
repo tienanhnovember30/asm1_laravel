@@ -13,8 +13,7 @@ class CarController extends Controller
         $column_names=[
             'plate_number'=>'Biển số xe',
             'owner'=>'Tên tài xế',
-            'travel_fee'=>'Giá vé',
-            'plate_image'=>''
+            'travel_fee'=>'Giá vé'
 
 
         ];
@@ -25,14 +24,20 @@ class CarController extends Controller
         $cars = Car::all();
         $keyword = $request->has('keyword') ? $request->keyword : "";     
         $rq_order_by = $request->has('order_by') ? $request->order_by : 'asc';
-        $rq_column_names = $request->has('column_names') ? $request->column_names : "name";
-        $query = Car::where('name', 'like', "%$keyword%");
+        $rq_column_names = $request->has('column_names') ? $request->column_names : "owner";
+        $query = Car::where('owner', 'like', "%$keyword%");
         if($rq_order_by == 'asc'){
             $query->orderBy($rq_column_names);
         }else{
             $query->orderByDesc($rq_column_names);
         }
-        return view('cars.index', compact('cars', 'column_names', 'order_by'));
+        $cars = $query->paginate($pageSize);
+        $cars->appends($request->input());
+        $searchDataC = compact('keyword');
+        $searchDataC['order_by'] = $rq_order_by;
+        $searchDataC['column_names'] = $rq_column_names;
+
+        return view('cars.index', compact('cars', 'column_names', 'order_by','searchDataC'));
     }
     
     public function remove($id){
@@ -44,5 +49,44 @@ class CarController extends Controller
         $model->delete();
         
         return redirect(route('car.index'));
+    }
+    public function addFormC(){
+        return view('cars.add');
+    }
+    public function saveAddC(Request $request){
+        $modelC = new Car();
+        if($request->hasFile('plate_image')){
+            $plimgPath = $request->file('plate_image')->store('cars');
+            $plimgPath = str_replace('public/', '', $plimgPath);
+            $modelC->avatar = $plimgPath;
+        }
+        $modelC->fill($request->all());
+        $modelC->save();
+        return redirect(route('car.index'));
+    }
+    public function editFormC($id){
+        $modelC= Car::find($id);
+        if(!$modelC){
+            return back();
+        }
+        return view('car.edit');
+    }
+    public function saveEditC(Request $request, $id){
+        $modelC= Car::find($id);
+        if(!$modelC){
+            return back();
+        }
+        if($request->hasFile('plate_image')){
+            Storage::delete($modelC->avatar);
+
+            $plimgPath = $request->file('plate_image')->store('cars');
+            $plimgPath = str_replace('public/', '', $plimgPath);
+            $modelC->avatar = $plimgPath;
+        }
+        $modelC->fill($request->all());
+        $modelC->save();
+        return redirect(route('car.index'));
+
+
     }
 }

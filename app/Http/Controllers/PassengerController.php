@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Storage;
 class PassengerController extends Controller
 {
     public function index(Request $request){
-        $pageSize = 10;
+        $pageSize = 5;
         $column_names = [
-            'name' => 'Tên hanh khach',
-            'avatar'=>'',
-            'travel_time' => "Thoi gian"
+            'name' => 'Tên hành khách',
+            'plate_number'=>'Biển số xe',
+            'travel_time' => "Giờ khởi hành"
         ];
 
         $order_by = [
@@ -57,7 +57,7 @@ class PassengerController extends Controller
         }
         $model->delete();
         
-        return redirect(route('passenger.index'));
+        return redirect(route('passengers.index'));
     }
 
     public function addForm(){
@@ -68,8 +68,8 @@ class PassengerController extends Controller
     public function saveAdd(Request $request){
         $model = new Passenger();
         if($request->hasFile('avatar')){
-            $avtPath = $request->file('avatar')->store('public/passengers');
-            $avtPath = str_replace('public/', 'storage/', $avtPath);
+            $avtPath = $request->file('avatar')->store('passengers');
+            $avtPath = str_replace('public/', '', $avtPath);
             $model->avatar = $avtPath;
         }
         
@@ -79,7 +79,7 @@ class PassengerController extends Controller
     }
 
     public function editForm($id){
-        $model = passenger::find($id);
+        $model = Passenger::find($id);
         if(!$model){
             return back();
         }
@@ -88,16 +88,15 @@ class PassengerController extends Controller
     }
 
     public function saveEdit(Request $request, $id){
-        $model = passenger::find($id);
+        $model = Passenger::find($id);
         if(!$model){
             return back();
         }
         if($request->hasFile('avatar')){
-            $oldAvt = str_replace('storage/', 'public/', $model->avatar);
-            Storage::delete($oldAvt);
+            Storage::delete($model->avatar);
 
-            $avtPath = $request->file('avatar')->store('public/passengers');
-            $avtPath = str_replace('public/', 'storage/', $avtPath);
+            $avtPath = $request->file('avatar')->store('passengers');
+            $avtPath = str_replace('public/', '', $avtPath);
             $model->avatar = $avtPath;
         }
         $model->fill($request->all());
