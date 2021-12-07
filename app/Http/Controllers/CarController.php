@@ -54,37 +54,37 @@ class CarController extends Controller
         return view('cars.add');
     }
     public function saveAddC(Request $request){
-        $modelC = new Car();
+        $model = new Car();
         if($request->hasFile('plate_image')){
             $plimgPath = $request->file('plate_image')->store('cars');
             $plimgPath = str_replace('public/', '', $plimgPath);
-            $modelC->avatar = $plimgPath;
+            $model->plate_image = $plimgPath;
         }
-        $modelC->fill($request->all());
-        $modelC->save();
+        $model->fill($request->all());
+        $model->save();
         return redirect(route('car.index'));
     }
     public function editFormC($id){
-        $modelC= Car::find($id);
-        if(!$modelC){
+        $model= Car::find($id);
+        if(!$model){
             return back();
         }
-        return view('car.edit');
+        return view('cars.edit');
     }
     public function saveEditC(Request $request, $id){
-        $modelC= Car::find($id);
-        if(!$modelC){
+        $model= Car::find($id);
+        if(!$model){
             return back();
         }
         if($request->hasFile('plate_image')){
-            Storage::delete($modelC->avatar);
-
+            Storage::delete($model->plate_image);
             $plimgPath = $request->file('plate_image')->store('cars');
             $plimgPath = str_replace('public/', '', $plimgPath);
-            $modelC->avatar = $plimgPath;
+            $model->plate_image = $plimgPath;
         }
-        $modelC->fill($request->all());
-        $modelC->save();
+        $model->fill($request->all());
+        $model->save();
+        
         return redirect(route('car.index'));
 
 
